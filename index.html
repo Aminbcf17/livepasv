@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <title>Livepasv</title>
@@ -118,7 +118,7 @@
           const dtStartDay = new Date(
             now.getFullYear(),
             now.getMonth(),
-            now.getDate()
+            now.getDate(),
           );
           const monthsDecDay = PasvCalc.getMonthsDec(dtStartDay);
           const earnedDay =
@@ -128,7 +128,7 @@
           const dtStartWeek = new Date(
             now.getFullYear(),
             now.getMonth(),
-            now.getDate() - ((now.getDay() + 6) % 7)
+            now.getDate() - ((now.getDay() + 6) % 7),
           );
           const monthsIntWeek = this.getMonthsInt(dtStartWeek),
             monthsDecWeek = PasvCalc.getMonthsDec(dtStartWeek);
@@ -264,11 +264,11 @@
           //////////////////////////////////////////////////////////////////////
 
           const cfgHash = Object.fromEntries(
-            new URLSearchParams(hash).entries()
+            new URLSearchParams(hash).entries(),
           );
           const cfg = {
             ...Object.fromEntries(
-              new URLSearchParams(atob(cfgHash.base64 ?? "")).entries()
+              new URLSearchParams(atob(cfgHash.base64 ?? "")).entries(),
             ),
             ...cfgHash,
           };
@@ -295,7 +295,7 @@
           this.pasvCalc = new PasvCalc(
             cfg.dtStart,
             cfg.investMonth,
-            cfg.yieldMonth
+            cfg.yieldMonth,
           );
 
           document.getElementById("imgMain").src = cfg.img;
@@ -307,7 +307,7 @@
           } else {
             for (const [id, ruleCodes] of Object.entries(this.showRules)) {
               document.getElementById(id).hidden = !ruleCodes.some((x) =>
-                cfg.show.includes(x)
+                cfg.show.includes(x),
               );
             }
           }
@@ -328,7 +328,7 @@
             Object.entries(this.updateRulesByID).map(([id, rule]) => [
               document.getElementById(id),
               rule,
-            ])
+            ]),
           );
 
           this.update();
