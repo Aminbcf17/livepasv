@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Livepasv</title>
+
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="favicon.svg" />
+
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css"
+    />
+    <link
+      rel="stylesheet"
+      type="text/css"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,1,0"
+    />
+
+    <style type="text/css">
+      /* Generated using the Customizer on https://bulma.io/ */
+      :root {
+        --bulma-primary-h: 171deg;
+        --bulma-primary-s: 100%;
+        --bulma-primary-l: 41%;
+        --bulma-link-h: 171deg;
+        --bulma-link-s: 100%;
+        --bulma-link-l: 41%;
+      }
+    </style>
+
+    <script type="text/javascript">
+      class PasvCalc {
+        constructor(dtStart, investMonth, yieldMonth) {
+          // Start datetime
+          this.dtStart = dtStart;
+          // Amount of money invested every month
+          this.investMonth = investMonth;
+          // Net monthly yield of the investment
+          this.yieldMonth = yieldMonth;
+
+          // Net gain per invested unit
+          this.gainUnit = this.investMonth * this.yieldMonth;
+        }
+
+        // Integer part of the number of years
+        getYearsInt(now = new Date()) {
+          return now.getFullYear() - this.dtStart.getFullYear();
+        }
+        // Integer part of the number of months
+        getMonthsInt(now = new Date()) {
+          return (
+            this.getYearsInt(now) * 12 +
+            (now.getMonth() - this.dtStart.getMonth())
+          );
+        }
+        // Decimal part of the number of months
+        static getMonthsDec(now = new Date()) {
+          const dtStartMonth = new Date(now.getFullYear(), now.getMonth()),
+            dtEndMonth = new Date(now.getFullYear(), now.getMonth() + 1);
+
+          const millisMonth = now - dtStartMonth,
+            millisMonthTotal = dtEndMonth - dtStartMonth;
+
+          return millisMonth / millisMonthTotal;
+        }
+
+        // Amount of invested money
+        getInvested(monthsInt) {
+          return this.investMonth * monthsInt;
+        }
+
+        // Monthly earning speed
+        getSpeedMonth(invested) {
+          return invested * this.yieldMonth;
+        }
+        // All the earning speed values. Note: we assume a month has 30 days
+        static getSpeedAll(speedMonth) {
+          return {
+            speedSecond: speedMonth / (30 * 24 * 60 * 60),
+            speedMinute: speedMonth / (30 * 24 * 60),
+            speedHour: speedMonth / (30 * 24),
+            speedDay: speedMonth / 30,
+            speedWeek: (speedMonth * 7) / 30,
+            speedMonth,
+            speedYear: speedMonth * 12,
+          };
+        }
+
+        // Money earned up to the start of the current month
+        getEarnedStartMonth(monthsInt) {
+          return this.gainUnit * ((monthsInt * (monthsInt - 1)) / 2);
+        }
+        // Money earned during the current month
+        getEarnedMonth(monthsInt, monthsDec) {
+          return this.gainUnit * (monthsInt * monthsDec);
+        }
+
+        // All the possible values
+        getAll(now = new Date()) {
+          const monthsInt = this.getMonthsInt(now),
+            monthsDec = PasvCalc.getMonthsDec(now);
+          const months = monthsInt + monthsDec;
+
+          const invested = this.getInvested(monthsInt);
+
+          const speedMonth = this.getSpeedMonth(invested);
+          const speedAll = PasvCalc.getSpeedAll(speedMonth);
+
+          const earnedStartMonth = this.getEarnedStartMonth(monthsInt),
+            earnedMonth = this.getEarnedMonth(monthsInt, monthsDec);
+
+          const earnedTotal = earnedStartMonth + earnedMonth;
+
+          //////////////////////////////////////////////////////////////////////
+
+          const dtStartDay = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate()
+          );
+          const monthsDecDay = PasvCalc.getMonthsDec(dtStartDay);
+          const earnedDay =
+            earnedMonth - this.getEarnedMonth(monthsInt, monthsDecDay);
+
+          // Note: the week starts on Monday, according to ISO 8601
+          const dtStartWeek = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            now.getDate() - ((now.getDay() + 6) % 7)
+          );
+          const monthsIntWeek = this.getMonthsInt(dtStartWeek),
+            monthsDecWeek = PasvCalc.getMonthsDec(dtStartWeek);
+          const earnedStartWeek =
+            this.getEarnedStartMonth(monthsIntWeek) +
+            this.getEarnedMonth(monthsIntWeek, monthsDecWeek);
+          const earnedWeek = earnedTotal - earnedStartWeek;
+
+          const yearsInt = this.getYearsInt(now);
+          const earnedStartYear = this.getEarnedStartMonth(yearsInt * 12);
+          const earnedYear = earnedTotal - earnedStartYear;
+
+          //////////////////////////////////////////////////////////////////////
+
+          return {
+            months,
+
+            invested,
+
+            ...speedAll,
+
+            dtStartDay,
+            dtStartWeek,
+            dtStartMonth: new Date(now.getFullYear(), now.getMonth()),
+            dtStartYear: new Date(now.getFullYear(), 0),
+            dtStartTotal: this.dtStart,
+            earnedDay,
+            earnedWeek,
+            earnedMonth,
+            earnedYear,
+            earnedTotal,
+          };
+        }
+      }
+
+      class UI {
+        static pasvCalc;
+
+        static updateMillis = 250;
+        static interval;
+
+        static showRules = {
+          divTitleEarnedDay: ["ed"],
+          divEarnedDay: ["ed"],
+          divTitleEarnedWeek: ["ew"],
+          divEarnedWeek: ["ew"],
+          divTitleEarnedMonth: ["emo"],
+          divEarnedMonth: ["emo"],
+          divTitleEarnedYear: ["ey"],
+          divEarnedYear: ["ey"],
+          divTitleEarnedTotal: ["et"],
+          divEarnedTotal: ["et"],
+
+          divTitleSpeed: ["ss", "sm", "sh", "sd", "sw", "smo", "sy"],
+          divSpeedSecond: ["ss"],
+          divSpeedMinute: ["sm"],
+          divSpeedHour: ["sh"],
+          divSpeedDay: ["sd"],
+          divSpeedWeek: ["sw"],
+          divSpeedMonth: ["smo"],
+          divSpeedYear: ["sy"],
+        };
+
+        static updateRulesByID = {
+          spanStartDay: (elem, data) =>
+            (elem.textContent = "00:00 local time zone"),
+          divEarnedDay: (elem, data) =>
+            this.setMajorMinor(elem, data.earnedDay),
+          spanStartWeek: (elem, data) =>
+            (elem.textContent = this.dtToISODateString(data.dtStartWeek)),
+          divEarnedWeek: (elem, data) =>
+            this.setMajorMinor(elem, data.earnedWeek),
+          spanStartMonth: (elem, data) =>
+            (elem.textContent = this.dtToISODateString(data.dtStartMonth)),
+          divEarnedMonth: (elem, data) =>
+            this.setMajorMinor(elem, data.earnedMonth),
+          spanStartYear: (elem, data) =>
+            (elem.textContent = this.dtToISODateString(data.dtStartYear)),
+          divEarnedYear: (elem, data) =>
+            this.setMajorMinor(elem, data.earnedYear),
+          spanStartTotal: (elem, data) =>
+            (elem.textContent = this.dtToShortString(data.dtStartTotal)),
+          divEarnedTotal: (elem, data) =>
+            this.setMajorMinor(elem, data.earnedTotal),
+
+          divSpeedSecond: (elem, data) =>
+            this.setMajorMinor(elem, data.speedSecond),
+          divSpeedMinute: (elem, data) =>
+            this.setMajorMinor(elem, data.speedMinute),
+          divSpeedHour: (elem, data) =>
+            this.setMajorMinor(elem, data.speedHour),
+          divSpeedDay: (elem, data) => this.setMajorMinor(elem, data.speedDay),
+          divSpeedWeek: (elem, data) =>
+            this.setMajorMinor(elem, data.speedWeek),
+          divSpeedMonth: (elem, data) =>
+            this.setMajorMinor(elem, data.speedMonth),
+          divSpeedYear: (elem, data) =>
+            this.setMajorMinor(elem, data.speedYear),
+        };
+        static updateRulesByElem = null; // Populated in this.load()
+
+        ////////////////////////////////////////////////////////////////////////
+
+        static splitMajorMinor(value) {
+          const strValue = value.toFixed(6);
+          return [strValue.substr(0, strValue.length - 4), strValue.substr(-4)];
+        }
+        static setMajorMinor(elem, value) {
+          const [major, minor] = this.splitMajorMinor(value),
+            elemMajor = elem.querySelector(".digitsMajor"),
+            elemMinor = elem.querySelector(".digitsMinor");
+
+          [elemMajor.textContent, elemMinor.textContent] = [major, minor];
+        }
+
+        static dtToShortString(dt) {
+          return dt.toString().replace(/\s+\(.+\)$/u, "");
+        }
+        static dtToISODateString(dt) {
+          const strYear = String(dt.getFullYear()),
+            strMonth = String(dt.getMonth() + 1).padStart(2, "0"),
+            strDay = String(dt.getDate()).padStart(2, "0");
+
+          return `${strYear}-${strMonth}-${strDay}`;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+
+        static setup() {
+          let hash = window.location.hash;
+          if (hash.startsWith("#")) hash = hash.substring(1);
+
+          //////////////////////////////////////////////////////////////////////
+
+          const cfgHash = Object.fromEntries(
+            new URLSearchParams(hash).entries()
+          );
+          const cfg = {
+            ...Object.fromEntries(
+              new URLSearchParams(atob(cfgHash.base64 ?? "")).entries()
+            ),
+            ...cfgHash,
+          };
+
+          cfg.currency ??= "USD";
+
+          cfg.dtStart = new Date(cfg.dtStart ?? "2000-01-01");
+          cfg.investMonth = parseInt(cfg.investMonth ?? "1000", 10);
+          cfg.yieldMonth = parseFloat(cfg.yieldMonth ?? "0.001");
+
+          cfg.img ??= "favicon.svg";
+
+          cfg.show ??= "";
+          cfg.show = cfg.show === "" ? [] : cfg.show.split(",");
+
+          console.info("cfg: %o", cfg);
+
+          //////////////////////////////////////////////////////////////////////
+
+          document.querySelectorAll(".currency").forEach((element) => {
+            element.textContent = cfg.currency;
+          });
+
+          this.pasvCalc = new PasvCalc(
+            cfg.dtStart,
+            cfg.investMonth,
+            cfg.yieldMonth
+          );
+
+          document.getElementById("imgMain").src = cfg.img;
+
+          if (cfg.show.length === 0) {
+            for (const id of Object.keys(this.showRules)) {
+              document.getElementById(id).hidden = false;
+            }
+          } else {
+            for (const [id, ruleCodes] of Object.entries(this.showRules)) {
+              document.getElementById(id).hidden = !ruleCodes.some((x) =>
+                cfg.show.includes(x)
+              );
+            }
+          }
+        }
+
+        static update() {
+          const data = this.pasvCalc.getAll();
+
+          this.updateRulesByElem.forEach((rule, elem) => rule(elem, data));
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+
+        static load() {
+          this.setup();
+
+          this.updateRulesByElem = new Map(
+            Object.entries(this.updateRulesByID).map(([id, rule]) => [
+              document.getElementById(id),
+              rule,
+            ])
+          );
+
+          this.update();
+          // We need to use an arrow function here, otherwise "this"
+          // would be undefined inside the function
+          this.interval = setInterval(() => UI.update(), this.updateMillis);
+        }
+
+        static fullscreen() {
+          document.documentElement.requestFullscreen().catch((error) => {
+            alert("Error: " + error);
+          });
+        }
+      }
+    </script>
+  </head>
+
+  <body
+    onload="UI.load()"
+    ondblclick="UI.fullscreen()"
+    onhashchange="UI.setup()"
+  >
+    <section class="section">
+      <div class="container">
+        <div class="block has-text-centered">
+          <figure class="image is-128x128 is-inline-block">
+            <img id="imgMain" class="is-rounded" src="favicon.svg" />
+          </figure>
+        </div>
+
+        <div id="divTitleEarnedDay" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">money</span>
+            </span>
+            <span><strong>Net passive income earned today</strong></span>
+          </span>
+          (since <em><span id="spanStartDay">???</span></em
+          >):
+        </div>
+        <div id="divEarnedDay" class="block">
+          <div class="is-size-3">
+            <strong
+              ><span class="has-text-success digitsMajor">?.??</span></strong
+            ><span class="digitsMinor">????</span>
+            <span class="currency">???</span>
+          </div>
+        </div>
+
+        <div id="divTitleEarnedWeek" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">money</span>
+            </span>
+            <span><strong>Net passive income earned this week</strong></span>
+          </span>
+          (since <em><span id="spanStartWeek">???</span></em
+          >):
+        </div>
+        <div id="divEarnedWeek" class="block">
+          <div class="is-size-3">
+            <strong
+              ><span class="has-text-success digitsMajor">?.??</span></strong
+            ><span class="digitsMinor">????</span>
+            <span class="currency">???</span>
+          </div>
+          <span class="is-size-7">
+            (the week starts on Monday, according to ISO 8601)
+          </span>
+        </div>
+
+        <div id="divTitleEarnedMonth" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">money</span>
+            </span>
+            <span><strong>Net passive income earned this month</strong></span>
+          </span>
+          (since <em><span id="spanStartMonth">???</span></em
+          >):
+        </div>
+        <div id="divEarnedMonth" class="block">
+          <div class="is-size-3">
+            <strong
+              ><span class="has-text-success digitsMajor">?.??</span></strong
+            ><span class="digitsMinor">????</span>
+            <span class="currency">???</span>
+          </div>
+        </div>
+
+        <div id="divTitleEarnedYear" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">money</span>
+            </span>
+            <span><strong>Net passive income earned this year</strong></span>
+          </span>
+          (since <em><span id="spanStartYear">???</span></em
+          >):
+        </div>
+        <div id="divEarnedYear" class="block">
+          <div class="is-size-3">
+            <strong
+              ><span class="has-text-success digitsMajor">?.??</span></strong
+            ><span class="digitsMinor">????</span>
+            <span class="currency">???</span>
+          </div>
+        </div>
+
+        <div id="divTitleEarnedTotal" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">money</span>
+            </span>
+            <span><strong>Total net passive income earned</strong></span>
+          </span>
+          (since <em><span id="spanStartTotal">???</span></em
+          >):
+        </div>
+        <div id="divEarnedTotal" class="block">
+          <div class="is-size-3">
+            <strong
+              ><span class="has-text-success digitsMajor">?.??</span></strong
+            ><span class="digitsMinor">????</span>
+            <span class="currency">???</span>
+          </div>
+        </div>
+
+        <div id="divTitleSpeed" class="block">
+          <span class="icon-text">
+            <span class="icon">
+              <span class="material-symbols-outlined">speed</span>
+            </span>
+            <span><strong>Current estimated earning speed</strong></span>
+            (based on a 30-day month):
+          </span>
+        </div>
+
+        <div class="block">
+          <div id="divSpeedSecond">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / s
+            </div>
+          </div>
+
+          <div id="divSpeedMinute">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / m
+            </div>
+          </div>
+
+          <div id="divSpeedHour">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / h
+            </div>
+          </div>
+
+          <div id="divSpeedDay">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / d
+            </div>
+          </div>
+
+          <div id="divSpeedWeek">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / w
+            </div>
+          </div>
+
+          <div id="divSpeedMonth">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / mo
+            </div>
+            <span class="is-size-7">(1 mo = 30 d)</span>
+          </div>
+
+          <div id="divSpeedYear">
+            <div class="is-size-3">
+              <strong
+                ><span class="has-text-success digitsMajor">?.??</span></strong
+              ><span class="digitsMinor">????</span>
+              <span class="currency">???</span> / y
+            </div>
+            <span class="is-size-7">(1 y = 365 d)</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </body>
+</html>
