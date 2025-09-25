@@ -276,7 +276,7 @@
           cfg.currency ??= "USD";
 
           cfg.dtStart = new Date(cfg.dtStart ?? "2000-01-01");
-          cfg.investMonth = parseInt(cfg.investMonth ?? "1000", 10);
+          cfg.investMonth = parseInt(cfg.investMonth ?? "0", 10);
           cfg.yieldMonth = parseFloat(cfg.yieldMonth ?? "0.001");
 
           cfg.img ??= "favicon.svg";
