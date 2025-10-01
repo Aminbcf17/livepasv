@@ -287,6 +287,8 @@
 
           cfg.img ??= "favicon.svg";
 
+          cfg.caption ??= "";
+
           cfg.show ??= "";
           cfg.show = cfg.show === "" ? [] : cfg.show.split(",");
 
@@ -309,6 +311,8 @@
           );
 
           document.getElementById("imgMain").src = cfg.img;
+
+          document.getElementById("divCaption").textContent = cfg.caption;
 
           if (cfg.show.length === 0) {
             for (const id of Object.keys(this.showRules)) {
@@ -370,6 +374,8 @@
             <img id="imgMain" class="is-rounded" src="favicon.svg" />
           </figure>
         </div>
+
+        <div id="divCaption" class="block has-text-centered is-italic"></div>
 
         <div id="divTitleEarnedDay" class="block">
           <span class="icon-text">
