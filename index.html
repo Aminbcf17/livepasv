@@ -263,6 +263,10 @@
 
           //////////////////////////////////////////////////////////////////////
 
+          if (typeof this.pasvCalc !== "undefined" && hash === "") return;
+
+          //////////////////////////////////////////////////////////////////////
+
           const cfgHash = Object.fromEntries(
             new URLSearchParams(hash).entries(),
           );
@@ -283,6 +287,8 @@
 
           cfg.show ??= "";
           cfg.show = cfg.show === "" ? [] : cfg.show.split(",");
+
+          cfg.clearHash = cfg.clearHash === "y";
 
           console.info("cfg: %o", cfg);
 
@@ -311,6 +317,8 @@
               );
             }
           }
+
+          if (cfg.clearHash) window.location.hash = "";
         }
 
         static update() {
