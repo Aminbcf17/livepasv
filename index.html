@@ -277,6 +277,8 @@
             ...cfgHash,
           };
 
+          cfg.title ??= "Livepasv";
+
           cfg.currency ??= "USD";
 
           cfg.dtStart = new Date(cfg.dtStart ?? "2000-01-01");
@@ -293,6 +295,8 @@
           console.info("cfg: %o", cfg);
 
           //////////////////////////////////////////////////////////////////////
+
+          document.title = cfg.title;
 
           document.querySelectorAll(".currency").forEach((element) => {
             element.textContent = cfg.currency;
