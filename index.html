@@ -192,7 +192,7 @@
         static randSpeedMult;
         static randSpeedRNG;
 
-        static updateMillis = 250;
+        static updateMillis;
         static timer;
 
         static showRules = {
@@ -317,6 +317,8 @@
             10,
           );
 
+          cfg.updateMillis = parseInt(cfg.updateMillis ?? "250", 10);
+
           cfg.img ??= "favicon.svg";
 
           cfg.caption ??= "";
@@ -346,6 +348,8 @@
           this.randSpeedMult = cfg.randSpeedMult;
           this.randSpeedRNG = new TimeBasedRNG(cfg.randSpeedRefreshMillis);
 
+          this.updateMillis = cfg.updateMillis;
+
           document.getElementById("imgMain").src = cfg.img;
 
           document.getElementById("divCaption").textContent = cfg.caption;
@@ -372,6 +376,10 @@
           const data = this.pasvCalc.getAll(new Date(), addSpeedMonth);
 
           this.updateRulesByElem.forEach((rule, elem) => rule(elem, data));
+
+          // We need to use an arrow function here, otherwise "this"
+          // would be undefined inside the function
+          this.timer = setTimeout(() => UI.update(), this.updateMillis);
         }
 
         ////////////////////////////////////////////////////////////////////////
@@ -387,9 +395,6 @@
           );
 
           this.update();
-          // We need to use an arrow function here, otherwise "this"
-          // would be undefined inside the function
-          this.timer = setInterval(() => UI.update(), this.updateMillis);
         }
 
         static fullscreen() {
