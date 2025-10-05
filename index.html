@@ -98,14 +98,14 @@
         }
 
         // All the possible values
-        getAll(now = new Date()) {
+        getAll(now = new Date(), addSpeedMonth = 0) {
           const monthsInt = this.getMonthsInt(now),
             monthsDec = PasvCalc.getMonthsDec(now);
           const months = monthsInt + monthsDec;
 
           const invested = this.getInvested(monthsInt);
 
-          const speedMonth = this.getSpeedMonth(invested);
+          const speedMonth = this.getSpeedMonth(invested) + addSpeedMonth;
           const speedAll = PasvCalc.getSpeedAll(speedMonth);
 
           const earnedStartMonth = this.getEarnedStartMonth(monthsInt),
@@ -164,8 +164,33 @@
         }
       }
 
+      class TimeBasedRNG {
+        constructor(refreshMillis = 1000) {
+          // How often a new random number is generated
+          this.refreshMillis = refreshMillis;
+
+          this.number = 0;
+          this.timeSlot = 0;
+        }
+
+        get() {
+          const tslot = Math.floor(Date.now() / this.refreshMillis);
+
+          if (tslot !== this.timeSlot) {
+            this.number = Math.random();
+            this.timeSlot = tslot;
+          }
+
+          return this.number;
+        }
+      }
+
       class UI {
         static pasvCalc;
+
+        static randSpeedOffset;
+        static randSpeedMult;
+        static randSpeedRNG;
 
         static updateMillis = 250;
         static interval;
@@ -285,6 +310,13 @@
           cfg.investMonth = parseInt(cfg.investMonth ?? "0", 10);
           cfg.yieldMonth = parseFloat(cfg.yieldMonth ?? "0.001");
 
+          cfg.randSpeedOffset = parseFloat(cfg.randSpeedOffset ?? "-0.5");
+          cfg.randSpeedMult = parseFloat(cfg.randSpeedMult ?? "0");
+          cfg.randSpeedRefreshMillis = parseInt(
+            cfg.randSpeedRefreshMillis ?? "1000",
+            10,
+          );
+
           cfg.img ??= "favicon.svg";
 
           cfg.caption ??= "";
@@ -310,6 +342,10 @@
             cfg.yieldMonth,
           );
 
+          this.randSpeedOffset = cfg.randSpeedOffset;
+          this.randSpeedMult = cfg.randSpeedMult;
+          this.randSpeedRNG = new TimeBasedRNG(cfg.randSpeedRefreshMillis);
+
           document.getElementById("imgMain").src = cfg.img;
 
           document.getElementById("divCaption").textContent = cfg.caption;
@@ -330,7 +366,10 @@
         }
 
         static update() {
-          const data = this.pasvCalc.getAll();
+          const addSpeedMonth =
+            (this.randSpeedRNG.get() + this.randSpeedOffset) *
+            this.randSpeedMult;
+          const data = this.pasvCalc.getAll(new Date(), addSpeedMonth);
 
           this.updateRulesByElem.forEach((rule, elem) => rule(elem, data));
         }
