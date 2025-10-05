@@ -193,7 +193,7 @@
         static randSpeedRNG;
 
         static updateMillis = 250;
-        static interval;
+        static timer;
 
         static showRules = {
           divTitleEarnedDay: ["ed"],
@@ -389,7 +389,7 @@
           this.update();
           // We need to use an arrow function here, otherwise "this"
           // would be undefined inside the function
-          this.interval = setInterval(() => UI.update(), this.updateMillis);
+          this.timer = setInterval(() => UI.update(), this.updateMillis);
         }
 
         static fullscreen() {
